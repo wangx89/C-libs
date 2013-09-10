@@ -12,7 +12,7 @@
 #define DATE_TYPE_SEC  5
 
 
-#define GMT_TO_CST		8
+#define GMT_TO_CST 8
 
 #ifndef INT_MAX
 #define INT_MAX 2147483647
