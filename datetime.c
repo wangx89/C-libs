@@ -108,6 +108,10 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
             tm2->tm_mday = _dd;
             return 0;
         } else {
+            leap = leapyear(tm1->tm_year);
+            for (i = 0; i < tm1->tm_mon; ++i) {
+                _dd += _mon_mday[leap][i];
+            }
             if (_dd > 0) {
                 for (i = tm1->tm_year + 1900; _dd > (leapyear(i) ? 366 : 365); ++i) {
                     _dd -= (leapyear(i) ? 366 : 365);
@@ -117,7 +121,7 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
                     _dd += (leapyear(i - 1) ? 366 : 365);
                 }
             }
-            tm2->tm_year = i;
+            tm2->tm_year = i - 1900;
             leap = leapyear(tm2->tm_year);
             for (i = 0; _dd > _mon_mday[leap][i]; ++i) {
                 _dd -= _mon_mday[leap][i];
