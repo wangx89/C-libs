@@ -1,6 +1,6 @@
-#include "datetime.h"
+#include "i_time.h"
 
-int diff_tm(struct tm *tm2, struct tm *tm1, int dt_type)
+int diff_tm(const struct tm *tm2, const struct tm *tm1, int dt_type)
 {
     int i;
 
@@ -57,7 +57,7 @@ int diff_tm(struct tm *tm2, struct tm *tm1, int dt_type)
 
     if (dt_type == DATE_TYPE_MIN) {
         if (_yy > MIN_MAX_YEAR) {
-            return INT_MAX;
+            return DIFF_ERROR;
         }
         return _mi;
     }
@@ -67,25 +67,25 @@ int diff_tm(struct tm *tm2, struct tm *tm1, int dt_type)
 
     if (dt_type == DATE_TYPE_SEC) {
         if (_yy > SEC_MAX_YEAR) {
-            return INT_MAX;
+            return DIFF_ERROR;
         }
         return _ss;
     }
 
-    return INT_MAX;
+    return DIFF_ERROR;
 }
 
-int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
+void modi_tm(struct tm *tm2, const struct tm *tm1, int dt_off, int dt_type)
 {
     copy_tm(tm2, tm1);
 
     if (dt_off == 0) {
-        return 0;
+        return;
     }
 
     if (dt_type == DATE_TYPE_YEAR) {
         tm2->tm_year = tm1->tm_year + dt_off;
-        return 0;
+        return;
     }
 
     if (dt_type == DATE_TYPE_MON) {
@@ -94,7 +94,7 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
 
         tm2->tm_year = tm1->tm_year + _mm / 12 - (_mm < 0);
         tm2->tm_mon = (_mm + 12) % 12;
-        return 0;
+        return;
     }
 
     if (dt_type == DATE_TYPE_DAY) {
@@ -106,7 +106,7 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
 
         if (_dd > 0 && _dd <= _mon_mday[leapyear(tm1->tm_year)][tm1->tm_mon]) {
             tm2->tm_mday = _dd;
-            return 0;
+            return;
         } else {
             leap = leapyear(tm1->tm_year);
             for (i = 0; i < tm1->tm_mon; ++i) {
@@ -128,7 +128,7 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
             }
             tm2->tm_mon = i;
             tm2->tm_mday = _dd;
-            return 0;
+            return;
         }
     }
 
@@ -140,7 +140,7 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
 
         if (_hh >= 0 && _hh < 24) {
             tm2->tm_hour = _hh;
-            return 0;
+            return;
         } else {
             tm2->tm_hour = _hh % 24;
             copy_tm(&tm3, tm2);
@@ -154,7 +154,7 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
 
         if (_mi >=0 && _mi < 60) {
             tm2->tm_min = _mi;
-            return 0;
+            return;
         } else {
             tm2->tm_min = _mi % 60;
             copy_tm(&tm3, tm2);
@@ -168,18 +168,16 @@ int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type)
 
         if (_ss >= 0 && _ss < 60) {
             tm2->tm_sec = _ss;
-            return 0;
+            return;
         } else {
             tm2->tm_sec = _ss % 60;
             copy_tm(&tm3, tm2);
             return modi_tm(tm2, &tm3, _ss / 60 - (_ss < 0), DATE_TYPE_MIN);
         }
     }
-
-    return -1;
 }
 
-void copy_tm(struct tm *tm2, struct tm *tm1) {
+void copy_tm(struct tm *tm2, const struct tm *tm1) {
     tm2->tm_sec  = tm1->tm_sec;
     tm2->tm_min  = tm1->tm_min;
     tm2->tm_hour = tm1->tm_hour;
@@ -188,4 +186,22 @@ void copy_tm(struct tm *tm2, struct tm *tm1) {
     tm2->tm_year = tm1->tm_year;
     tm2->tm_yday = tm1->tm_yday;
     tm2->tm_isdst = tm1->tm_isdst;
+}
+
+int get_date(char *date)
+{
+    time_t now;
+    struct tm *now_tm;
+    time(&now);
+    now_tm = localtime(&now);
+    return strftime(date, TIME_LEN, "%Y%m%d", now_tm);
+}
+
+int get_datetime(char *datetime)
+{
+    time_t now;
+    struct tm *now_tm;
+    time(&now);
+    now_tm = localtime(&now);
+    return strftime(datetime, TIME_LEN, "%F %T", now_tm);
 }
