@@ -1,5 +1,5 @@
-#ifndef _DATE_TIME_H
-#define _DATE_TIME_H
+#ifndef _I_TIME_H
+#define _I_TIME_H
 
 #include <time.h>
 #include <limits.h>
@@ -28,6 +28,7 @@
 
 #define DIFF_ERROR INT_MAX
 
+#define TIME_LEN	64
 
 /* check if YEAR is a leap year (every 4 years,
    except every 100th isn't, and every 400th is).  */
@@ -46,11 +47,14 @@ static const unsigned short int _mon_mday[2][12] =
 
 /* diff tm2 and tm1, return difference of two tm in datetype dt_type,
    return DIFF_ERROR(INT_MAX) if result over max diff size */
-int diff_tm(struct tm *tm2, struct tm *tm1, int dt_type);
+int diff_tm(const struct tm *tm2, const struct tm *tm1, int dt_type);
 
 /* modify tm1 and store result to tm2, return 0 if succeed, -1 if failed */
-int modi_tm(struct tm *tm2, struct tm *tm1, int dt_off, int dt_type);
+void modi_tm(struct tm *tm2, const struct tm *tm1, int dt_off, int dt_type);
 
-void copy_tm(struct tm *tm2, struct tm *tm1);
+void copy_tm(struct tm *tm2, const struct tm *tm1);
+
+int get_date(char *date);
+int get_datetime(char *datetime);
 
 #endif
