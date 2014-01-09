@@ -1,4 +1,5 @@
 #include "i_time.h"
+#include <stdio.h>
 
 int diff_tm(const struct tm *tm2, const struct tm *tm1, int dt_type)
 {
@@ -188,20 +189,97 @@ void copy_tm(struct tm *tm2, const struct tm *tm1) {
     tm2->tm_isdst = tm1->tm_isdst;
 }
 
-int get_date(char *date)
-{
-    time_t now;
-    struct tm *now_tm;
-    time(&now);
-    now_tm = localtime(&now);
-    return strftime(date, TIME_LEN, "%Y%m%d", now_tm);
+int diff_time(const char *t2, const char *t1, const char *fmt, int dt_type) {
+    struct tm tm2;
+    struct tm tm1;
+
+    char *temp;
+    if ((temp = strptime(t2, fmt, &tm2)) == NULL) {
+        return DIFF_ERROR;
+    }
+    if ((temp = strptime(t1, fmt, &tm1)) == NULL) {
+        printf("temp - %s\n", temp);
+        return DIFF_ERROR;
+    }
+
+    return diff_tm(&tm2, &tm1, dt_type);
 }
 
-int get_datetime(char *datetime)
+int diff_time2(const char *t2, const char *fmt2, const char *t1, const char *fmt1, int dt_type) {
+    struct tm tm2;
+    struct tm tm1;
+
+    char *temp;
+    if ((temp = strptime(t2, fmt2, &tm2)) == NULL) {
+        return DIFF_ERROR;
+    }
+
+    if ((temp = strptime(t1, fmt1, &tm1)) == NULL) {
+        return DIFF_ERROR;
+    }
+
+    return diff_tm(&tm2, &tm1, dt_type);
+}
+
+char *modi_time(char *t2, char *t1, const char *fmt, int dt_off, int dt_type) {
+    struct tm tm2;
+    struct tm tm1;
+
+    char *temp;
+    if ((temp = strptime(t1, fmt, &tm1)) == NULL) {
+        return NULL;
+    }
+
+    modi_tm(&tm2, &tm1, dt_off, dt_type);
+    int tmp;
+    if ((tmp = strftime(t2, TIME_LEN, fmt, &tm2)) == 0) {
+        printf("tmp - %d\n", tmp);
+        return NULL;
+    }
+
+    return t2;
+}
+
+char *modi_time2(char *t2, const char *fmt2, const char *t1, const char *fmt1, int dt_off, int dt_type) {
+    struct tm tm2;
+    struct tm tm1;
+
+    char *temp;
+    if ((temp = strptime(t1, fmt1, &tm1)) == NULL) {
+        return NULL;
+    }
+
+    modi_tm(&tm2, &tm1, dt_off, dt_type);
+    if (strftime(t2, TIME_LEN, fmt2, &tm2) == 0) {
+        return NULL;
+    }
+
+    return t2;
+}
+
+
+char *get_date(char *date)
 {
     time_t now;
     struct tm *now_tm;
     time(&now);
     now_tm = localtime(&now);
-    return strftime(datetime, TIME_LEN, "%F %T", now_tm);
+    
+    if (strftime(date, TIME_LEN, FMT_DATE, now_tm) == 0)
+        return NULL;
+    else
+        return date;
+}
+
+char *get_datetime(char *datetime)
+{
+    time_t now;
+    struct tm *now_tm;
+    time(&now);
+    now_tm = localtime(&now);
+
+    if (strftime(datetime, TIME_LEN, FMT_TIME, now_tm) == 0)
+        return NULL;
+    else
+        return datetime;
 }
